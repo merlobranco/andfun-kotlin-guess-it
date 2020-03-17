@@ -26,6 +26,9 @@ import androidx.navigation.fragment.NavHostFragment.findNavController
 import com.example.android.guesstheword.R
 import com.example.android.guesstheword.databinding.GameFragmentBinding
 
+const val KEY_SCORE = "KEY_SCORE"
+const val KEY_PLAYED_WORDS = "KEY_PLAYED_WORDS"
+
 /**
  * Fragment where the game is played
  */
@@ -36,6 +39,8 @@ class GameFragment : Fragment() {
 
     // The current score
     private var score = 0
+
+    private var played_words = ""
 
     // The list of words - the front of the list is the next word to guess
     private lateinit var wordList: MutableList<String>
@@ -54,7 +59,14 @@ class GameFragment : Fragment() {
         )
 
         resetList()
-        nextWord()
+
+        if (savedInstanceState != null) {
+            restoreGame(savedInstanceState)
+        }
+        else {
+            nextWord()
+        }
+
 
         binding.correctButton.setOnClickListener { onCorrect() }
         binding.skipButton.setOnClickListener { onSkip() }
@@ -94,6 +106,19 @@ class GameFragment : Fragment() {
         wordList.shuffle()
     }
 
+    private fun restoreGame(savedInstanceState: Bundle) {
+        score = savedInstanceState.getInt(KEY_SCORE, 0)
+        played_words = savedInstanceState.getString(KEY_PLAYED_WORDS, "")
+        word = played_words.split(" ").last()
+        updateList()
+        updateWordText()
+        updateScoreText()
+    }
+
+    private fun updateList() {
+        wordList = wordList.filter { w -> !played_words.contains(w) }.toMutableList()
+    }
+
     /**
      * Called when the game is finished
      */
@@ -111,6 +136,7 @@ class GameFragment : Fragment() {
             gameFinished()
         } else {
             word = wordList.removeAt(0)
+            played_words = played_words.plus(" ").plus(word)
         }
         updateWordText()
         updateScoreText()
@@ -137,5 +163,11 @@ class GameFragment : Fragment() {
 
     private fun updateScoreText() {
         binding.scoreText.text = score.toString()
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putInt(KEY_SCORE, score)
+        outState.putString(KEY_PLAYED_WORDS, played_words.trim())
     }
 }
