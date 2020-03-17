@@ -17,30 +17,29 @@
 package com.example.android.guesstheword.screens.game
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.NavHostFragment.findNavController
 import com.example.android.guesstheword.R
 import com.example.android.guesstheword.databinding.GameFragmentBinding
-
-const val KEY_SCORE = "KEY_SCORE"
-const val KEY_PLAYED_WORDS = "KEY_PLAYED_WORDS"
 
 /**
  * Fragment where the game is played
  */
 class GameFragment : Fragment() {
 
+    private lateinit var viewModel: GameViewModel
+
     // The current word
     private var word = ""
 
     // The current score
     private var score = 0
-
-    private var played_words = ""
 
     // The list of words - the front of the list is the next word to guess
     private lateinit var wordList: MutableList<String>
@@ -56,17 +55,18 @@ class GameFragment : Fragment() {
                 R.layout.game_fragment,
                 container,
                 false
+
         )
 
+        Log.i("GameFragment", "ViewModelProvider called!")
+
+        // Returning the reference to a previous existing GameViewModel
+        // Reestablishing the connection to the same GameViewModel
+        viewModel = ViewModelProvider(this).get(GameViewModel::class.java)
+
+
         resetList()
-
-        if (savedInstanceState != null) {
-            restoreGame(savedInstanceState)
-        }
-        else {
-            nextWord()
-        }
-
+        nextWord()
 
         binding.correctButton.setOnClickListener { onCorrect() }
         binding.skipButton.setOnClickListener { onSkip() }
@@ -106,19 +106,6 @@ class GameFragment : Fragment() {
         wordList.shuffle()
     }
 
-    private fun restoreGame(savedInstanceState: Bundle) {
-        score = savedInstanceState.getInt(KEY_SCORE, 0)
-        played_words = savedInstanceState.getString(KEY_PLAYED_WORDS, "")
-        word = played_words.split(" ").last()
-        updateList()
-        updateWordText()
-        updateScoreText()
-    }
-
-    private fun updateList() {
-        wordList = wordList.filter { w -> !played_words.contains(w) }.toMutableList()
-    }
-
     /**
      * Called when the game is finished
      */
@@ -136,7 +123,6 @@ class GameFragment : Fragment() {
             gameFinished()
         } else {
             word = wordList.removeAt(0)
-            played_words = played_words.plus(" ").plus(word)
         }
         updateWordText()
         updateScoreText()
@@ -163,11 +149,5 @@ class GameFragment : Fragment() {
 
     private fun updateScoreText() {
         binding.scoreText.text = score.toString()
-    }
-
-    override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
-        outState.putInt(KEY_SCORE, score)
-        outState.putString(KEY_PLAYED_WORDS, played_words.trim())
     }
 }
