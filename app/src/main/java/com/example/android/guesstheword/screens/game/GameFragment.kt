@@ -52,18 +52,11 @@ class GameFragment : Fragment() {
 
         )
 
-        Log.i("GameFragment", "ViewModelProvider called!")
-
         // Returning the reference to a previous existing GameViewModel
         // Reestablishing the connection to the same GameViewModel
         viewModel = ViewModelProvider(this).get(GameViewModel::class.java)
 
-        binding.correctButton.setOnClickListener {
-            viewModel.onCorrect()
-        }
-        binding.skipButton.setOnClickListener {
-            viewModel.onSkip()
-        }
+        binding.gameViewModel = viewModel
 
         /** Setting up LiveData observation relationship **/
         // Passing the code that will be triggered when a change is produced in the LiveData
