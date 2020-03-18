@@ -93,4 +93,8 @@ class GameViewModel : ViewModel() {
         _score.value = score.value?.plus(1)
         nextWord()
     }
+
+    fun onGameFinishComplete() {
+        _eventGameFinish.value = false
+    }
 }
